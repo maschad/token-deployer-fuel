@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-fuels`](https://github.com/fuellabs/fuels-ts).
+A native token deployer based on [s20](https://github.com/FuelLabs/sway-standards/tree/master/standards/src20-native-asset)
 
 ## Getting Started
 
