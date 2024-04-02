@@ -8,17 +8,18 @@ import { Button } from "@/components/Button";
 import toast from "react-hot-toast";
 import { useActiveWallet } from "@/hooks/useActiveWallet";
 import useAsync from "react-use/lib/useAsync";
+import { Input } from "../components/Input";
 
-const contractId = contractIds.testContract;
+const contractId = contractIds.tokenDeployerContract;
 
 const hasContract = process.env.NEXT_PUBLIC_HAS_CONTRACT === "true";
-const hasPredicate = process.env.NEXT_PUBLIC_HAS_PREDICATE === "true";
-const hasScript = process.env.NEXT_PUBLIC_HAS_SCRIPT === "true";
 
 export default function Home() {
   const { wallet, walletBalance, refreshWalletBalance } = useActiveWallet();
   const [contract, setContract] = useState<TestContractAbi>();
-  const [counter, setCounter] = useState<number>();
+  const [tokenName, setTokenName] = useState<string>();
+  const [tokenSymbol, setTokenSymbol] = useState<string>();
+  const [totalSupply, setTotalSupply] = useState<number>();
 
   /**
    * useAsync is a wrapper around useEffect that allows us to run asynchronous code
@@ -28,13 +29,13 @@ export default function Home() {
     if (hasContract && wallet) {
       const testContract = TestContractAbi__factory.connect(contractId, wallet);
       setContract(testContract);
-      const { value } = await testContract.functions.get_count().get();
-      setCounter(value.toNumber());
+      const { value } = await testContract.functions.total_assets();
+      setTotalSupply(value.toNumber());
     }
   }, [wallet]);
 
   // eslint-disable-next-line consistent-return
-  const onIncrementPressed = async () => {
+  const onSetNameAndToken = async () => {
     if (!contract) {
       return toast.error("Contract not loaded");
     }
@@ -45,8 +46,10 @@ export default function Home() {
       );
     }
 
-    const { value } = await contract.functions.increment_counter(bn(1)).call();
-    setCounter(value.toNumber());
+    const tx = await contract.functions.set_name(tokenName);
+    await tx.wait();
+    const tx2 = await contract.functions.set_symbol(tokenSymbol);
+    await tx2.wait();
 
     await refreshWalletBalance?.();
   };
@@ -54,42 +57,37 @@ export default function Home() {
   return (
     <>
       <div className="flex gap-4 items-center">
-        <h1 className="text-2xl font-semibold ali">Welcome to Fuel</h1>
+        <h1 className="text-2xl font-semibold ali">Welcome to TokenCreator</h1>
+      </div>
+      <div>
+        <h4 className="text-min"> There are a maximum of 100,000,000 coins for each asset that may be minted</h4>
       </div>
 
       {hasContract && (
-        <span className="text-gray-400">
-          Get started by editing <i>sway-programs/contract/main.sw</i> or <i>src/pages/index.tsx</i>.
-        </span>
-      )}
-
-      <span className="text-gray-400">
-        This template uses the new <Link href="https://fuellabs.github.io/fuels-ts/tooling/cli/fuels/">Fuels CLI</Link> to enable
-        type-safe hot-reloading for your Sway programs.
-      </span>
-
-      {hasContract && (
         <>
-          <h3 className="text-xl font-semibold">Counter</h3>
+          <div className="flex gap-4 items-left">
+            <h2>Please Enter the Token name:</h2>
+          </div>
+          <Input
+            className="w-full"
+            value={tokenName}
+            onChange={(e) => setTokenName(e.target.value ? e.target.value : undefined)}
+            placeholder="name of token"
+          />
+          <div className="flex gap-4 items-left">
+            <h2>Please Enter the Token Symbol:</h2>
+          </div>
+          <Input
+            className="w-full"
+            value={tokenSymbol}
+            onChange={(e) => setTokenSymbol(e.target.value ? e.target.value : undefined)}
+            placeholder="symbol of token"
+          />
 
-          <span className="text-gray-400 text-6xl">{counter}</span>
-
-          <Button onClick={onIncrementPressed} className="mt-6">
-            Increment Counter
+          <Button onClick={onSetNameAndToken} className="mt-6">
+            Deploy Token
           </Button>
         </>
-      )}
-
-      {hasPredicate && (
-        <Link href="/predicate" className="mt-4">
-          Predicate Example
-        </Link>
-      )}
-
-      {hasScript && (
-        <Link href="/script" className="mt-4">
-          Script Example
-        </Link>
       )}
 
       <Link href="https://docs.fuel.network" target="_blank" className="mt-12">

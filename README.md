@@ -1,4 +1,4 @@
-A native token deployer based on [s20](https://github.com/FuelLabs/sway-standards/tree/master/standards/src20-native-asset)
+A native token deployer based on [SRC-20](https://github.com/FuelLabs/sway-standards/tree/master/standards/src20-native-asset) and [SRC-3](https://github.com/FuelLabs/sway-standards/blob/master/standards/src/src3.sw)
 
 ## Getting Started
 
